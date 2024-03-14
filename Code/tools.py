@@ -5,7 +5,7 @@ import copy
 
 class Wave:
     def __init__(self,duration=6,step=1/100_000):
-        self.d = duration
+        self.d = duration 
         self.step = step
         self.t = np.linspace(0,self.d,int(self.d/self.step),endpoint = False)
     
@@ -49,7 +49,7 @@ class Wave:
         superposed_wave.y = ys
         return superposed_wave
     
-    def fft(self):
+    def fft(self): #make better
         N = len(self.y)
         self.yf = np.fft.rfft(self.y)[:N//2]*2*self.step/self.d
         self.tf = np.fft.rfftfreq(N, np.diff(self.t)[0])[:N//2]
@@ -63,7 +63,7 @@ class Sinewave(Wave):
         self.phase = phase
         self.f = frequency
         self.y = self.a*np.sin(2*np.pi*self.f*self.t - self.phase)
-        self.t_for_fft = np.linspace(0, 1/(self.step*4*self.f), int(1/self.step), endpoint=False)
+        self.t_for_fft = np.linspace(0, 1/(self.step*4*self.f), int(1/self.step), endpoint=False) #huh???
         self.y_for_fft = self.a*np.sin(2*np.pi*self.f*self.t_for_fft - self.phase)
 
     def __str__(self):
