@@ -85,11 +85,12 @@ class Trianglewave(Wave):
 
 
 class Square_Pulse(Wave):
-    def __init__(self, start=-np.pi, end=np.pi, step=100_000):
+    def __init__(self, amp = 1,start=-np.pi, end=np.pi, step=100_000):
         super().__init__(start, end, step)
+        self.a = amp
         #self.y = signal.windows.boxcar(len(self.t))
         #self.y=np.repeat(1,len(self.t))
-        self.y = np.array([0 if (i<3*len(self.t)//7 or i>4*len(self.t)//7) else 1 for i in range(len(self.t))])
+        self.y = np.array([0 if (i<3*len(self.t)//7 or i>4*len(self.t)//7) else self.a for i in range(len(self.t))])
 
     def fft(self,freq = True): ##ADD  parameter freq
         self.yf = fft(self.y)/len(self.y)*7
@@ -99,6 +100,16 @@ class Square_Pulse(Wave):
         return (self.tf,self.yf)
 
 class Delta(Wave):
-    def __init__(self, start=-np.pi, end=np.pi, step=100_000):
+    def __init__(self, amp = 1,start=-np.pi, end=np.pi, step=100_000):
         super().__init__(start, end, step)
-        self.y = signal.unit_impulse(len(self.t),'mid')
+        self.a = amp
+        self.y = signal.unit_impulse(len(self.t),'mid')*self.a
+
+
+class Sinc(Wave):
+     def __init__(self,frequency,amplitude=1,phase=0,start=-np.pi,end=np.pi,step=100_000):
+        super().__init__(start,end,step)
+        self.a = amplitude
+        self.phase = phase
+        self.f = frequency
+        self.y = np.sinc(self.f*self.t-self.phase)*self.a
