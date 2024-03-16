@@ -59,6 +59,18 @@ class Sinewave(Wave):
 
     def __str__(self):
         return f'sine wave with:\nfrequency = {self.f}\namplitude = {self.a}\nphase = {self.phase}'
+    
+
+class Cosinewave(Wave):
+    def __init__(self,frequency,amplitude=1,phase=0,start=-np.pi,end=np.pi,step=100_000):
+        super().__init__(start,end,step)
+        self.a = amplitude
+        self.phase = phase
+        self.f = frequency
+        self.y = self.a*np.cos(2*np.pi*self.f*self.t - self.phase)
+
+    def __str__(self):
+        return f'cosine wave with:\nfrequency = {self.f}\namplitude = {self.a}\nphase = {self.phase}'
 
 
 class Square_wave(Wave): 

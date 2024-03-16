@@ -7,7 +7,7 @@ from scipy.fft import fft , fftshift
 w1 = tl.Square_wave(30,2,0,-4,-2)
 w2 = tl.Sinewave(18,2,0,-4,-2)
 w3 = tl.Sinewave(3,7,0,-10,-5)
-wup = tl.Square_Pulse(1,-10,9)
+wup = tl.Square_Pulse(1,-1,1)
 w4 = w1.superposition([w2,w3])
 w5 = w1.convolve([w2,w3])
 w6 = signal.fftconvolve(w1.y,signal.unit_impulse(100_000,'mid'),'same')
