@@ -17,6 +17,7 @@ from matplotlib.backends.backend_tkagg import (
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 from matplotlib.axis import Axis
+import matplotlib.pyplot as plt
 import numpy as np
 
 #Variables
@@ -27,6 +28,7 @@ waves = {}
 line_no = 2
 view_graph = None
 fft_graph  = None
+fft_x = None
 
 #Superclass of the signal lines
 class GridLine:
@@ -99,7 +101,7 @@ class Periodic_GridLine(GridLine):
         self.spanB = StringVar(value=None)  #Span Begining
         self.spanE = StringVar(value=None)  #Span End
         
-        self.combitems = ['Sine','Square','Triangular']
+        self.combitems = ['Cosine','Square','Triangular']
         self.typeC = ttk.Combobox(self.line, values=self.combitems,state="readonly",textvariable=self.type,width=7)
         self.typeC.set("Choose")
         self.typeC.grid(row = 0,column=1, padx=7)
@@ -119,7 +121,7 @@ class Periodic_GridLine(GridLine):
         self.l = Label(self.line, text="-",font="Arial 16")
         self.l.grid(row=0,column=6)
 
-        self.spanEE = Entry(self.line, font = 'Arial 9',width=6,textvariable = self.spanB)
+        self.spanEE = Entry(self.line, font = 'Arial 9',width=6,textvariable = self.spanE)
         self.spanEE.grid(row = 0,column=7, padx=5)
 
         self.used.grid(row = 0,column=8, padx=7)
@@ -187,8 +189,8 @@ class Periodic_GridLine(GridLine):
             
         if check:              ##The signals creator tools.py connection
                                 ##Type|Frequency|Amplitude|Phase|SpanBegin|SpanEnd
-            if wave[0] =='Sine':
-                waves[self.no] = Sinewave(float(wave[1]),float(wave[2]),float(wave[3]),float(wave[4]),float(wave[5]))
+            if wave[0] =='Cosine':
+                waves[self.no] = Cosinewave(float(wave[1]),float(wave[2]),float(wave[3]),float(wave[4]),float(wave[5]))
             elif wave[0] =='Square':
                 waves[self.no] = Square_wave(float(wave[1]),float(wave[2]),float(wave[3]),float(wave[4]),float(wave[5]))
             elif wave[0] =='Triangular':
@@ -210,7 +212,7 @@ class Periodic_GridLine(GridLine):
             self.save.destroy()
             export = lambda: export_wave(waves[self.no])
             self.export = Button(self.line, text="Export",font='Arial 7',width = 7,bg='#fdbf00',command=export)
-            self.export.grid(row=0,column=7,padx = 3)
+            self.export.grid(row=0,column=9,padx = 3)
             
             return True
 
@@ -239,7 +241,7 @@ class NonPeriodic_GridLine(GridLine):
         self.spanB = StringVar(value=None)  #Span Begining
         self.spanE = StringVar(value=None)  #Span End
         
-        self.combitems = ['Sine','Square','Triangular']
+        self.combitems = ['Delta','Square_Pulse','Sinc']
         self.typeC = ttk.Combobox(self.line, values=self.combitems,state="readonly",textvariable=self.type,width=7)
         self.typeC.set("Choose")
         self.typeC.grid(row = 0,column=1, padx=7)
@@ -259,7 +261,7 @@ class NonPeriodic_GridLine(GridLine):
         self.l = Label(self.line, text="-",font="Arial 16")
         self.l.grid(row=0,column=6)
 
-        self.spanEE = Entry(self.line, font = 'Arial 9',width=6,textvariable = self.spanB)
+        self.spanEE = Entry(self.line, font = 'Arial 9',width=6,textvariable = self.spanE)
         self.spanEE.grid(row = 0,column=7, padx=5)
 
         self.used.grid(row = 0,column=8, padx=7)
@@ -325,13 +327,14 @@ class NonPeriodic_GridLine(GridLine):
             messagebox.showerror(title='Parameters Error', message='Type valid values in the entries!')
             return False
             
-        if check:              
-            if wave[0] =='Sine':
-                waves[self.no] = Sinewave(float(wave[1]),float(wave[2]),float(wave[3]),float(wave[4]))
-            elif wave[0] =='Square':
-                waves[self.no] = Square_wave(float(wave[1]),float(wave[2]),float(wave[3]),float(wave[4]))
-            elif wave[0] =='Triangular':
-                 waves[self.no] = Trianglewave(float(wave[1]),float(wave[2]),float(wave[3]),float(wave[4]))
+        if check:         ##The signals creator tools.py connection
+                                ##Type|Frequency|Amplitude|Phase|SpanBegin|SpanEnd     
+            if wave[0] =='Delta':
+                waves[self.no] = Delta(float(wave[2]),float(wave[4]),float(wave[5]))
+            elif wave[0] =='Square_Pulse':
+                waves[self.no] = Square_Pulse(float(wave[2]),float(wave[4]),float(wave[5]))
+            elif wave[0] =='Sinc':
+                 waves[self.no] = Sinc(float(wave[1]),float(wave[2]),float(wave[3]),float(wave[4]),float(wave[5]))
 
             try:
                 if GridLine.selected_line.no == self.no:     
@@ -349,7 +352,7 @@ class NonPeriodic_GridLine(GridLine):
             self.save.destroy()
             export = lambda: export_wave(waves[self.no])
             self.export = Button(self.line, text="Export",font='Arial 7',width = 7,bg='#fdbf00',command=export)
-            self.export.grid(row=0,column=7,padx = 3)
+            self.export.grid(row=0,column=9,padx = 3)
             
             return True
 
@@ -445,7 +448,7 @@ def drawGraphics():
     global view_graph
     global fft_graph
     m_form = Tk()
-    m_form.grid_rowconfigure(1, weight=1)
+    m_form.grid_rowconfigure(1, weight=2)
     m_form.grid_columnconfigure(1, weight=1)
     m_form.title("Signal Processor------- © 2024 Developed by Pycholics")
     m_form.geometry('1500x700+0+0')
@@ -462,7 +465,7 @@ def drawGraphics():
 
     # Buttons
     controlPanel = LabelFrame(m_form, bg='#6C2DC7', bd=3, text="Control Panel", font='Arial 12')
-    controlPanel.grid_rowconfigure(1, weight=1)
+    controlPanel.grid_rowconfigure(1, weight=2)
     controlPanel.grid_columnconfigure(2, weight=1)
     controlPanel.grid(row=1, column=0, sticky=(E,W,S))
 
@@ -547,9 +550,50 @@ def drawGraphics():
     
     conv_btn = Button(controlPanel, text="Convolution",font=('Roman', 17, 'bold'),width = 14,bg='#307D7E',command=lambda: view_graph.conv(use_waves,wave_c_grid))
     conv_btn.grid(row=1,column=0,sticky=SE,padx = 10,pady = 10)
+
+    #Fourier Panel
+    global fft_x
+    fftPanel = LabelFrame(controlPanel, bg='#6C2DC7', bd=3, text="Fourier", font='Arial 10')
+    fftPanel.grid_rowconfigure(1, weight=2)
+    fftPanel.grid_columnconfigure(2, weight=1)
+    fftPanel.grid(row=0, column=1, sticky=(E,W,S))
+
+    fft_btn = Button(fftPanel, text="Fourier Transform",font=('Roman', 17, 'bold'),width = 17,bg='#678003',command=lambda: fft_graph.fft(selected_wave))
+    fft_btn.grid(row=0,column=0,sticky=SE,padx = 10)
+
+    fft_x = StringVar(value=None)
+    combitems = ['F(Hz)','Ω(rad/s)']
+    fft_C = ttk.Combobox(fftPanel, values=combitems,state="readonly",textvariable=fft_x,width=7)
+    fft_C.set('F(Hz)')
+    fft_C.grid(row = 0,column=2, padx=7)
+
+    #SubPlot Panel
+    spanB = StringVar(value=0)
+    spanE = StringVar(value=3.1415*2) #2π
+
+    subpltPanel = LabelFrame(controlPanel, bg='#6C2DC7', bd=3, text="SubPlot", font='Arial 10')
+    subpltPanel.grid_rowconfigure(1, weight=2)
+    subpltPanel.grid_columnconfigure(2, weight=1)
+    subpltPanel.grid(row=1, column=1, sticky=(E,W,S))
+
+    subplt_btn = Button(subpltPanel, text="SubPlot",font=('Roman', 17, 'bold'),width = 15,bg='#2FF3E0',command=lambda: Plotter.subplot(use_waves,spanB,spanE))
+    subplt_btn.grid(row=0,column=0,sticky=SE,padx = 10)
+
+    subplt_spanEB = Entry(subpltPanel, font = 'Arial 9',width=6,textvariable = spanB)
+    subplt_spanEB.grid(row = 0,column=1, padx=7)
+
+    subplt_l1 = Label(subpltPanel, text="-",font="Arial 16")
+    subplt_l1.grid(row=0,column=2)
+
+    subplt_spanEE = Entry(subpltPanel, font = 'Arial 9',width=6,textvariable = spanE)
+    subplt_spanEE.grid(row = 0,column=3, padx=5)
+
+    subplt_l2 = Label(subpltPanel, text="Time Span(sec)",font="Arial 8")
+    subplt_l2.grid(row=0,column=4)
     
     grid_lines[1] = Periodic_GridLine(wave_p_grid,1)
     grid_lines[2] = NonPeriodic_GridLine(wave_np_grid,2)
+
     
     m_form.mainloop()
 
@@ -609,15 +653,42 @@ class Plotter:
 
     #Fourier Transform        
     def fft(self,wave):
-        if wave != None:
-            t = wave.fft() #Do fft ##Give it a boolean
+        if wave != None:    
             self.fig.clear()
             plot = self.fig.add_subplot(111)
             plot.title.set_text(f"Fourier transform of signal no{GridLine.selected_line.no}")
-            plot.set_xlabel('Frequency (Hz)')
+            if fft_x.get() == "Ω(rad/s)":
+                t = wave.fft(False) #Do fft ##Give it a boolean  True freq
+                plot.set_xlabel('Ω (rad/s)')
+            else:
+                t = wave.fft(True) #Do fft ##Give it a boolean  True freq
+                plot.set_xlabel('Frequency (Hz)')
             plot.set_ylabel('Amplitude')
             plot.plot(t[0],t[1])
             self.canvas.draw_idle()
+
+    #Subplot        
+    def subplot(signals,start,end):
+        if len(signals) < 6:
+            axis = []
+            i=1
+            first_loop = True
+            for signal in signals.items():
+                if first_loop:
+                    axis.append(plt.subplot(len(signals),1,i))
+                else:
+                    axis.append(plt.subplot(len(signals),1,i, sharex=axis[0]))
+                plt.plot(signal[1].t, signal[1].y)
+                plt.tick_params('x', labelsize=7)
+                plt.ylabel(f"Signal {signal[0]}")
+                i=i+1
+                first_loop = False
+            plt.xlim(float(start.get()), float(end.get()))
+            plt.show()
+        else:
+            messagebox.showerror(title='SubPlot Limit', message='Subplot cannot plot over 5 signals!')
+                
+    
 
 #Export WAV file functions           
 def export_wave(w):
@@ -662,4 +733,3 @@ def main_Program():
     drawGraphics()            
 
 main_Program()
-
